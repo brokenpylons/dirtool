@@ -1,0 +1,42 @@
+#!/usr/bin/env bash
+
+usage() {
+    echo 'Help'
+}
+
+stripdir() {
+    dirname=$1
+    tempname=$(uuidgen)
+    mv "$dirname" "$tempname"
+    find "$tempname" -mindepth 1 -maxdepth 1 -exec mv {} . \;
+    rmdir "$tempname"
+}
+
+wrap() {
+    dirname=$1
+    tempname=$(uuidgen)
+    mkdir "$tempname"
+    find . -mindepth 1 -maxdepth 1 ! -name "$tempname" -exec mv {} "$tempname" \;
+    mv "$tempname" "$dirname"
+}
+
+OPTIND=1
+
+while getopts "h?s:w:" opt; do
+    case "$opt" in
+    h|\?)
+        usage
+        ;;
+    s)
+        stripdir "$OPTARG"
+        ;;
+    w)
+        wrap "$OPTARG"
+	;;
+    esac
+done
+
+shift $((OPTIND - 1))
+if [[ $1 == '--' ]]; then
+    shift
+fi
